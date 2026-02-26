@@ -17,11 +17,23 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask isMine, isEnemy, isWall;
 
     [Header("Distance")]
-    [SerializeField] private float miningRadius = 1f;
+    [SerializeField] private float miningRadius = 3f;
     [SerializeField] private float attackRadius = 13f;
+
+    [Header("Balance")]
+    [SerializeField] private int countMoney = 0;
+    [SerializeField] private float miningInterval = 1.5f;
+
+    [Header("Attack")]
+    [SerializeField] private float attackInterval = 1f;
+    [SerializeField] private float attackDamage = 20f;
+
+    private float attackTimer;
+    private float miningTimer;
 
     private Rigidbody playerRb;
     private List<Transform> enemiesInRange = new();
+    private Ore currentMine;
 
     private bool playerNearMine;
     private bool playerViewEnemy;
@@ -38,6 +50,16 @@ public class PlayerController : MonoBehaviour
         {
             isMining = true;
             isAttack = false;
+
+            miningTimer += Time.deltaTime;
+
+            if (miningTimer >= miningInterval)
+            {
+                currentMine.HpDamage(30f);
+                countMoney += 30;
+                miningTimer = 0f;
+            }
+
             return;
         }
         else
@@ -84,12 +106,18 @@ public class PlayerController : MonoBehaviour
     {
         if (((1 << other.gameObject.layer) & isEnemy) != 0)
             enemiesInRange.Add(other.transform);
+
+        if (((1 << other.gameObject.layer) & isMine) != 0)
+            currentMine = other.GetComponent<Ore>();
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (((1 << other.gameObject.layer) & isEnemy) != 0)
             enemiesInRange.Remove(other.transform);
+
+        if (((1 << other.gameObject.layer) & isMine) != 0)
+            currentMine = null;
     }
 
     private void CheckAndAttackClosestEnemy()
@@ -132,11 +160,25 @@ public class PlayerController : MonoBehaviour
         if (bestTarget != null)
         {
             isAttack = true;
-            Debug.Log("Атака");
+
+            attackTimer += Time.deltaTime;
+
+            if (attackTimer >= attackInterval)
+            {
+                HP enemyHp = bestTarget.GetComponent<HP>();
+
+                if (enemyHp != null)
+                {
+                    enemyHp.HpDamage(attackDamage);
+                }
+
+                attackTimer = 0f;
+            }
         }
         else
         {
             isAttack = false;
+            attackTimer = 0f;
         }
     }
 }
