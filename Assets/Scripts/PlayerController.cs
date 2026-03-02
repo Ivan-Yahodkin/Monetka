@@ -74,6 +74,11 @@ public class PlayerController : MonoBehaviour
         }
 
         Debug.Log(enemiesInRange.Count);
+
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            Destroy(gameObject);
+        }
     }
 
     private void FixedUpdate()

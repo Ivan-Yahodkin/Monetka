@@ -89,6 +89,7 @@ public class HP : MonoBehaviour
     private void PlayerDead()
     {
         Debug.Log("Player dead");
+        Destroy(gameObject);
     }
 
     private void EnemyDead()
@@ -100,5 +101,6 @@ public class HP : MonoBehaviour
     private void BaseDead()
     {
         Debug.Log("Base destroyed");
+        Destroy(gameObject);
     }
 }
