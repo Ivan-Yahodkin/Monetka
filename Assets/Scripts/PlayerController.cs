@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] private FixedJoystick fixedJoystick;
+    [SerializeField] private DynamicJoystick fixedJoystick;
 
     [Header("Move Speed")]
     [SerializeField] private float moveSpeed = 5f;
@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Attack")]
     [SerializeField] private float attackInterval = 1f;
-    [SerializeField] private float attackDamage = 20f;
+    [SerializeField] private float attackDamage = 101f;
 
     private float attackTimer;
     private float miningTimer;
@@ -45,7 +45,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        playerNearMine = Physics.CheckSphere(transform.position, miningRadius, isMine);
+        // Находим ближайшую шахту каждый кадр
+        FindNearestMine();
+
         if (playerNearMine && playerRb.linearVelocity.magnitude < 0.1f)
         {
             isMining = true;
@@ -55,12 +57,15 @@ public class PlayerController : MonoBehaviour
 
             if (miningTimer >= miningInterval)
             {
-                currentMine.HpDamage(30f);
-                countMoney += 30;
+                if (currentMine != null)
+                {
+                    currentMine.HpDamage(30f);
+                    countMoney += 30;
+                }
                 miningTimer = 0f;
             }
 
-            return;
+            return; // Приоритет майнинга выше атаки
         }
         else
         {
@@ -68,16 +73,9 @@ public class PlayerController : MonoBehaviour
         }
 
         playerViewEnemy = Physics.CheckSphere(transform.position, attackRadius, isEnemy);
-        if(playerViewEnemy && !isMining)
+        if (playerViewEnemy && !isMining)
         {
             CheckAndAttackClosestEnemy();
-        }
-
-        Debug.Log(enemiesInRange.Count);
-
-        if (Input.GetKeyDown(KeyCode.P))
-        {
-            Destroy(gameObject);
         }
     }
 
@@ -111,18 +109,35 @@ public class PlayerController : MonoBehaviour
     {
         if (((1 << other.gameObject.layer) & isEnemy) != 0)
             enemiesInRange.Add(other.transform);
-
-        if (((1 << other.gameObject.layer) & isMine) != 0)
-            currentMine = other.GetComponent<Ore>();
     }
 
     private void OnTriggerExit(Collider other)
     {
         if (((1 << other.gameObject.layer) & isEnemy) != 0)
             enemiesInRange.Remove(other.transform);
+    }
 
-        if (((1 << other.gameObject.layer) & isMine) != 0)
-            currentMine = null;
+    private void FindNearestMine()
+    {
+        Collider[] mines = Physics.OverlapSphere(transform.position, miningRadius, isMine);
+        float minDistance = Mathf.Infinity;
+        Ore nearestMine = null;
+
+        foreach (var mineCol in mines)
+        {
+            Ore ore = mineCol.GetComponent<Ore>();
+            if (ore == null) continue;
+
+            float distance = Vector3.Distance(transform.position, mineCol.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearestMine = ore;
+            }
+        }
+
+        currentMine = nearestMine;
+        playerNearMine = currentMine != null;
     }
 
     private void CheckAndAttackClosestEnemy()
@@ -138,26 +153,21 @@ public class PlayerController : MonoBehaviour
 
         foreach (var enemy in enemiesInRange)
         {
-            if (enemy == null)
-                continue;
+            if (enemy == null) continue;
 
-            Vector3 direction = (enemy.position - transform.position);
+            Vector3 direction = enemy.position - transform.position;
             float distance = direction.magnitude;
 
-            if (distance > attackRadius)
-                continue;
+            if (distance > attackRadius) continue;
 
             direction.Normalize();
 
             if (Physics.Raycast(transform.position, direction, out RaycastHit hit, attackRadius, isEnemy | isWall))
             {
-                if (hit.transform == enemy)
+                if (hit.transform == enemy && distance < minDistance)
                 {
-                    if (distance < minDistance)
-                    {
-                        minDistance = distance;
-                        bestTarget = enemy;
-                    }
+                    minDistance = distance;
+                    bestTarget = enemy;
                 }
             }
         }
@@ -171,12 +181,10 @@ public class PlayerController : MonoBehaviour
             if (attackTimer >= attackInterval)
             {
                 HP enemyHp = bestTarget.GetComponent<HP>();
-
                 if (enemyHp != null)
                 {
                     enemyHp.HpDamage(attackDamage);
                 }
-
                 attackTimer = 0f;
             }
         }

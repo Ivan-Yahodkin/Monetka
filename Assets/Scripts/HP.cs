@@ -95,6 +95,7 @@ public class HP : MonoBehaviour
     private void EnemyDead()
     {
         Debug.Log("Enemy dead");
+        FindAnyObjectByType<GameManager>().EnemyKilled();
         Destroy(gameObject);
     }
 
