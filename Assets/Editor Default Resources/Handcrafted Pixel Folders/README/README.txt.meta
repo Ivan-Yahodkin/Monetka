@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 419bb49d41b12c44f872028e152a50ba
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 324982
+  packageName: Handcrafted Pixel Folders
+  packageVersion: 1.0.2
+  assetPath: Assets/Editor Default Resources/Handcrafted Pixel Folders/README/README.txt
+  uploadId: 867174
