@@ -67,13 +67,16 @@ public class PlayerController : MonoBehaviour
         playerRb = GetComponent<Rigidbody>();
 
     }
-
+    private void FixedUpdate()
+    {
+        Move();
+    }
     private void Update()
     {
         // Поиск ближайшей шахты
         FindNearestMine();
         UpdateAimTorso();
-        Move();
+       
         AnimationHand();
         UpdateEnemiesInRange();
 
