@@ -110,7 +110,7 @@ public class PlayerController : MonoBehaviour
         else
         {
             isMining = false;
-            animPickaxe.SetBool("Mine", false);
+           
             PickaxeBack.SetActive(true);
             Pickaxe.SetActive(false);
         }

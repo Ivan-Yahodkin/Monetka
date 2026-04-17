@@ -31,11 +31,11 @@ Material:
     m_Floats:
     - Step1: 1
     - _Gloss: 10
-    - _OutlineWidth: 0.005
+    - _OutlineWidth: 0
     - _RimPower: 2.2
     - _RimStep: 0
     - _RimStepSmooth: 0
-    - _ShadowStep: 0.324
+    - _ShadowStep: 0.254
     - _ShadowStepSmooth: 0
     - _SpecularStep: 0
     - _SpecularStepSmooth: 0
